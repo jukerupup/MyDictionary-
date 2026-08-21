@@ -1,0 +1,35 @@
+[
+  {
+    "meta": {
+      "id": "resilient",
+      "stems": ["resilient", "resiliently"],
+      "app-shortdef": {"hw": "resilient", "fl": "adjective", "def": ["able to recover"]},
+      "offensive": false
+    },
+    "hwi": {
+      "hw": "re*sil*ient",
+      "prs": [
+        {"ipa": "rɪˈzɪljənt", "sound": {"audio": "resili01"}},
+        {"mw": "ri-ˈzil-yənt"}
+      ]
+    },
+    "fl": "adjective",
+    "shortdef": ["capable of becoming strong or healthy again"],
+    "def": [
+      {"sseq": [[
+        ["sense", {"dt": [
+          ["text", "{bc}able to withstand or recover quickly from difficult conditions"],
+          ["vis", [{"t": "She is a {it}resilient{/it} learner."}]]
+        ]}]
+      ]]}
+    ],
+    "dros": [
+      {"drp": "resiliently", "def": [{"sseq": [[["sense", {"dt": [["text", "{bc}in a resilient way"]]}]]]}]}
+    ]
+  },
+  null,
+  17,
+  {},
+  "resilience",
+  "resiliency"
+]

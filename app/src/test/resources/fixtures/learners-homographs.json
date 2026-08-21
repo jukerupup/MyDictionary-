@@ -1,0 +1,19 @@
+[
+  {
+    "meta": {"id": "wind:1", "stems": ["wind"], "offensive": false},
+    "hwi": {"hw": "wind"},
+    "fl": "noun",
+    "shortdef": ["moving air"],
+    "def": [{"sseq": [[
+      ["sense", {"dt": [["text", "{bc}a natural movement of air"]]}],
+      ["sense", {"dt": [["text", "{bc}breath controlled for speech"]]}]
+    ]]}]
+  },
+  {
+    "meta": {"id": "wind:2", "stems": ["wind", "wound"], "offensive": false},
+    "hwi": {"hw": "wind"},
+    "fl": "verb",
+    "shortdef": ["to turn around something"],
+    "def": [{"sseq": [[["sense", {"dt": [["text", "{bc}to wrap or twist"]]}]]]}]
+  }
+]

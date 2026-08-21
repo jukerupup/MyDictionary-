@@ -1,0 +1,22 @@
+[
+  {
+    "meta": {
+      "id": "resilient",
+      "syns": [["strong", "tough", "strong"]],
+      "ants": [["fragile", "weak"]]
+    },
+    "hwi": {"hw": "resilient"},
+    "fl": "adjective",
+    "shortdef": ["able to recover from difficulty"],
+    "def": [{"sseq": [[
+      ["sense", {
+        "dt": [["text", "{bc}able to become well again"], ["vis", [{"t": "a {it}resilient{/it} community"}]]],
+        "syn_list": [[{"wd": "elastic"}, {"wd": "tough"}]],
+        "rel_list": [[{"wd": "adaptable"}, {"wd": "flexible"}]],
+        "near_list": [[{"wd": "delicate"}]],
+        "ant_list": [[{"wd": "brittle"}, {"wd": "fragile"}]],
+        "phrase_list": [[{"wd": "bounce back"}]]
+      }]
+    ]]}]
+  }
+]
