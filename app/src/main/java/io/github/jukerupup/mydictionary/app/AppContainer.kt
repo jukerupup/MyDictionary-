@@ -1,6 +1,11 @@
 package io.github.jukerupup.mydictionary.app
 
+import io.github.jukerupup.mydictionary.data.parser.MerriamWebsterParser
+import io.github.jukerupup.mydictionary.data.remote.MerriamWebsterHttpClient
+import io.github.jukerupup.mydictionary.data.repository.MerriamWebsterDictionaryRepository
 import io.github.jukerupup.mydictionary.domain.model.DictionaryCredential
+import io.github.jukerupup.mydictionary.domain.repository.DictionaryRepository
+import okhttp3.HttpUrl.Companion.toHttpUrl
 
 sealed interface AppConfiguration {
     data object Ready : AppConfiguration
@@ -12,6 +17,7 @@ sealed interface AppConfiguration {
 
 class AppContainer private constructor(
     val configuration: AppConfiguration,
+    val dictionaryRepository: DictionaryRepository,
 ) {
     companion object {
         fun create(learnersKey: String, thesaurusKey: String): AppContainer {
@@ -24,7 +30,18 @@ class AppContainer private constructor(
             } else {
                 AppConfiguration.MissingCredentials(missing)
             }
-            return AppContainer(configuration)
+            val api = MerriamWebsterHttpClient.createApi(
+                "https://www.dictionaryapi.com/".toHttpUrl(),
+            )
+            return AppContainer(
+                configuration = configuration,
+                dictionaryRepository = MerriamWebsterDictionaryRepository(
+                    api = api,
+                    parser = MerriamWebsterParser(),
+                    learnersKey = learnersKey,
+                    thesaurusKey = thesaurusKey,
+                ),
+            )
         }
     }
 }
