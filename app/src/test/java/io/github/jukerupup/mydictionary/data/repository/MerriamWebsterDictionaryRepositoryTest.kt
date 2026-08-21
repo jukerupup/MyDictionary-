@@ -122,16 +122,15 @@ class MerriamWebsterDictionaryRepositoryTest {
     }
 
     @Test
-    fun `malformed and non JSON content return typed malformed errors`() = runTest {
+    fun `malformed JSON and non JSON content remain distinct`() = runTest {
         server.enqueue(MockResponse().setBody("[{\"meta\":"))
         server.enqueue(MockResponse().setBody("not-json"))
         val repository = repository()
 
-        assertTrue(repository.lookupDefinition("broken") is LookupResult.Failure)
-        assertEquals(
-            DictionaryError.MalformedContent("MalformedJson"),
-            (repository.lookupDefinition("html") as LookupResult.Failure).error,
-        )
+        val malformed = failure(repository.lookupDefinition("broken"))
+        val nonJson = failure(repository.lookupDefinition("html"))
+        assertEquals(DictionaryError.MalformedContent("MalformedJson"), malformed)
+        assertEquals(DictionaryError.NonJsonResponse, nonJson)
     }
 
     @Test

@@ -49,6 +49,9 @@ class MerriamWebsterDictionaryRepository(
         if (!response.isSuccessful) return statusFailure(response.code())
         val source = response.body()?.string()
             ?: return LookupResult.Failure(DictionaryError.MalformedContent("EmptyBody"))
+        if (!source.isJsonContainerShaped()) {
+            return LookupResult.Failure(DictionaryError.NonJsonResponse)
+        }
         when (val result = parse(source)) {
             is ParseResult.Failure -> LookupResult.Failure(
                 DictionaryError.MalformedContent(result.error.name),
@@ -79,3 +82,6 @@ class MerriamWebsterDictionaryRepository(
         DictionaryError.MissingConfiguration(setOf(credential)),
     )
 }
+
+private fun String.isJsonContainerShaped(): Boolean =
+    firstOrNull { !it.isWhitespace() } == '[' || firstOrNull { !it.isWhitespace() } == '{'

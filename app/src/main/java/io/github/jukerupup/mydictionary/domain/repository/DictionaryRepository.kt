@@ -26,6 +26,7 @@ sealed interface DictionaryError {
     data object QuotaExceeded : DictionaryError
     data object Offline : DictionaryError
     data object Timeout : DictionaryError
+    data object NonJsonResponse : DictionaryError
     data class Server(val statusCode: Int?) : DictionaryError
     data class MalformedContent(val reason: String) : DictionaryError
 }
