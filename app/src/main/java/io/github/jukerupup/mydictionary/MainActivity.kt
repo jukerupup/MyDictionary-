@@ -4,18 +4,12 @@ import android.os.Bundle
 import android.content.res.Configuration
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.lifecycle.ViewModelProvider
 import androidx.core.view.WindowCompat
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import io.github.jukerupup.mydictionary.app.AppConfiguration
-import io.github.jukerupup.mydictionary.ui.showcase.PrimitiveShowcaseScreen
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import io.github.jukerupup.mydictionary.ui.lookup.LookupScreen
+import io.github.jukerupup.mydictionary.ui.lookup.LookupViewModel
 import io.github.jukerupup.mydictionary.ui.theme.MyDictionaryTheme
 
 class MainActivity : ComponentActivity() {
@@ -27,32 +21,21 @@ class MainActivity : ComponentActivity() {
             isAppearanceLightStatusBars = !isDarkTheme
             isAppearanceLightNavigationBars = !isDarkTheme
         }
-        val configuration = (application as MyDictionaryApplication).container.configuration
+        val container = (application as MyDictionaryApplication).container
+        val viewModel = ViewModelProvider(
+            this,
+            LookupViewModel.Factory(container.dictionaryRepository),
+        )[LookupViewModel::class.java]
         setContent {
             MyDictionaryTheme {
-                if (BuildConfig.DEBUG) {
-                    PrimitiveShowcaseScreen()
-                } else {
-                    ConfigurationSurface(configuration)
-                }
+                val state by viewModel.state.collectAsState()
+                LookupScreen(
+                    state = state,
+                    configuration = container.configuration,
+                    onLookup = viewModel::lookup,
+                    onPronounce = viewModel::requestPronunciation,
+                )
             }
-        }
-    }
-}
-
-@Composable
-private fun ConfigurationSurface(configuration: AppConfiguration) {
-    Surface(modifier = Modifier.fillMaxSize()) {
-        Column(modifier = Modifier.padding(24.dp)) {
-            Text(text = "MyDictionary", style = MaterialTheme.typography.headlineMedium)
-            Text(
-                text = when (configuration) {
-                    AppConfiguration.Ready -> "Dictionary services are configured."
-                    is AppConfiguration.MissingCredentials ->
-                        "API keys are not configured. Add them to local.properties."
-                },
-                modifier = Modifier.padding(top = 12.dp),
-            )
         }
     }
 }
