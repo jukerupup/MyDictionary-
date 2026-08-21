@@ -28,6 +28,10 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import io.github.jukerupup.mydictionary.data.parser.InputError
+import io.github.jukerupup.mydictionary.domain.audio.AudioPlaybackState
+import io.github.jukerupup.mydictionary.domain.lookup.LookupState
+import io.github.jukerupup.mydictionary.domain.repository.DictionaryError
 import io.github.jukerupup.mydictionary.ui.theme.DictionaryShapes
 import io.github.jukerupup.mydictionary.ui.theme.DictionarySpacing
 import io.github.jukerupup.mydictionary.ui.theme.DictionaryLayout
@@ -42,6 +46,101 @@ fun QuickDefineCard(
     scrollable: Boolean = false,
     onDismiss: () -> Unit = {},
     onPronounce: () -> Unit = {},
+) {
+    QuickDefineCardContainer(
+        modifier = modifier,
+        scrollable = scrollable,
+        onDismiss = onDismiss,
+    ) {
+        Text(
+            text = word,
+            modifier = Modifier.semantics { heading() },
+            style = MaterialTheme.typography.titleLarge,
+        )
+        DefinitionBlock(definition = definition)
+        example?.let { ExampleBlock(example = it) }
+        PronunciationControl(
+            word = word,
+            state = if (audioAvailable) {
+                PronunciationState.Available
+            } else {
+                PronunciationState.Unavailable
+            },
+            onClick = onPronounce,
+        )
+        ProviderAttribution()
+    }
+}
+
+@Composable
+fun QuickDefineCard(
+    state: LookupState,
+    selectedText: String?,
+    modifier: Modifier = Modifier,
+    onDismiss: () -> Unit,
+    onPronounce: (String) -> Unit = {},
+) {
+    QuickDefineCardContainer(
+        modifier = modifier,
+        scrollable = true,
+        onDismiss = onDismiss,
+    ) {
+        Text(
+            text = "Quick Define",
+            modifier = Modifier.semantics { heading() },
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.primary,
+        )
+        when (state) {
+            LookupState.Idle -> QuickDefineStatus(
+                StatusKind.Loading,
+                "Preparing lookup",
+                "Getting the selected text ready.",
+            )
+            is LookupState.Loading -> QuickDefineStatus(
+                StatusKind.Loading,
+                "Looking up ${state.query}",
+                "Finding the clearest learner definition.",
+            )
+            is LookupState.Content -> QuickDefineLearnerContent(state, onPronounce)
+            is LookupState.Suggestions -> QuickDefineStatus(
+                StatusKind.Suggestion,
+                "No exact match for ${state.query}",
+                "Close Quick Define and try one of these spellings: ${state.values.joinToString()}.",
+            )
+            is LookupState.NoMatch -> QuickDefineStatus(
+                StatusKind.Empty,
+                "No match found",
+                "Close Quick Define and try another form of ${state.query}.",
+            )
+            is LookupState.InvalidInput -> QuickDefineStatus(
+                StatusKind.Error,
+                state.error.quickDefineTitle(),
+                state.error.quickDefineGuidance(),
+            )
+            is LookupState.Failure -> QuickDefineStatus(
+                if (state.error == DictionaryError.Offline) StatusKind.Offline else StatusKind.Error,
+                state.error.quickDefineTitle(),
+                state.error.quickDefineGuidance(),
+            )
+        }
+        if (state !is LookupState.Content && !selectedText.isNullOrBlank()) {
+            Text(
+                text = selectedText,
+                modifier = Modifier.testTag("quick_define_selected_text"),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+@Composable
+private fun QuickDefineCardContainer(
+    modifier: Modifier,
+    scrollable: Boolean,
+    onDismiss: () -> Unit,
+    content: @Composable () -> Unit,
 ) {
     Surface(
         modifier = modifier
@@ -72,29 +171,95 @@ fun QuickDefineCard(
                     Text("Close")
                 }
             }
-            Text(
-                text = word,
-                modifier = Modifier.semantics { heading() },
-                style = MaterialTheme.typography.titleLarge,
-            )
-            DefinitionBlock(definition = definition)
-            example?.let { ExampleBlock(example = it) }
-            PronunciationControl(
-                word = word,
-                state = if (audioAvailable) {
-                    PronunciationState.Available
-                } else {
-                    PronunciationState.Unavailable
-                },
-                onClick = onPronounce,
-            )
-            Text(
-                text = "Definition content from Merriam-Webster Inc.",
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+            content()
         }
     }
+}
+
+@Composable
+private fun QuickDefineLearnerContent(
+    state: LookupState.Content,
+    onPronounce: (String) -> Unit,
+) {
+    val entry = state.entries.firstOrNull()
+    val definition = entry?.definitions?.firstOrNull { it.text.isNotBlank() }
+    val fallback = entry?.shortDefinition?.takeIf { definition == null && it.isNotBlank() }
+    if (entry == null || (definition == null && fallback == null)) {
+        QuickDefineStatus(
+            StatusKind.Error,
+            "We couldn't read this entry",
+            "Close Quick Define and try the selection again.",
+        )
+        return
+    }
+    val pronunciation = entry.pronunciations.firstOrNull()
+    WordHeader(
+        word = entry.headword,
+        partOfSpeech = entry.functionalLabel,
+        ipa = pronunciation?.ipa?.let { "/${it.trim().trim('/')}/" },
+        pronunciationState = if (pronunciation?.audioReference == null) {
+            PronunciationState.Unavailable
+        } else {
+            state.audio.toQuickDefinePronunciationState()
+        },
+        onPronounce = { onPronounce(pronunciation?.audioReference.orEmpty()) },
+    )
+    DefinitionBlock(definition = definition?.text ?: fallback.orEmpty(), senseNumber = 1)
+    definition?.examples?.firstOrNull()?.let { ExampleBlock(example = it) }
+    ProviderAttribution()
+}
+
+@Composable
+private fun QuickDefineStatus(kind: StatusKind, title: String, message: String) {
+    StatusPanel(kind = kind, title = title, message = message)
+}
+
+@Composable
+private fun ProviderAttribution() {
+    Text(
+        text = "Definition content from Merriam-Webster Inc.",
+        style = MaterialTheme.typography.labelMedium,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
+}
+
+private fun AudioPlaybackState.toQuickDefinePronunciationState(): PronunciationState = when (this) {
+    AudioPlaybackState.Idle, AudioPlaybackState.Completed -> PronunciationState.Available
+    AudioPlaybackState.Loading -> PronunciationState.Loading
+    AudioPlaybackState.Playing -> PronunciationState.Playing
+    is AudioPlaybackState.Error -> PronunciationState.Error
+}
+
+private fun InputError.quickDefineTitle(): String = when (this) {
+    InputError.Blank -> "No word selected"
+    InputError.TooLong -> "Selection is too long"
+}
+
+private fun InputError.quickDefineGuidance(): String = when (this) {
+    InputError.Blank -> "Select a word or phrase, then open Quick Define again."
+    InputError.TooLong -> "Select 80 characters or fewer."
+}
+
+private fun DictionaryError.quickDefineTitle(): String = when (this) {
+    is DictionaryError.MissingConfiguration -> "Dictionary setup needed"
+    DictionaryError.InvalidCredential -> "Dictionary key isn't valid"
+    DictionaryError.QuotaExceeded -> "Lookup limit reached"
+    DictionaryError.Offline -> "You're offline"
+    DictionaryError.Timeout -> "The lookup took too long"
+    DictionaryError.NonJsonResponse -> "Unexpected service response"
+    is DictionaryError.Server -> "Dictionary service unavailable"
+    is DictionaryError.MalformedContent -> "We couldn't read this entry"
+}
+
+private fun DictionaryError.quickDefineGuidance(): String = when (this) {
+    is DictionaryError.MissingConfiguration -> "Add the Learner's Dictionary key, rebuild, and try again."
+    DictionaryError.InvalidCredential -> "Check the configured Learner's Dictionary key, then rebuild."
+    DictionaryError.QuotaExceeded -> "Try again later."
+    DictionaryError.Offline -> "Reconnect, then open Quick Define again."
+    DictionaryError.Timeout -> "Check your connection and open Quick Define again."
+    DictionaryError.NonJsonResponse -> "Close Quick Define and try again."
+    is DictionaryError.Server -> "Close Quick Define and try again shortly."
+    is DictionaryError.MalformedContent -> "Close Quick Define and try the selection again."
 }
 
 @Composable
