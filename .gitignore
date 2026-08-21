@@ -1,0 +1,23 @@
+# Machine-local configuration and credentials
+local.properties
+*.jks
+*.keystore
+*.pem
+*.p12
+
+# Gradle and build outputs
+.gradle/
+build/
+**/build/
+
+# IDE state
+.idea/
+*.iml
+
+# Local execution and agent artifacts
+.omo/
+.codegraph/
+
+# Operating-system files
+.DS_Store
+Thumbs.db
