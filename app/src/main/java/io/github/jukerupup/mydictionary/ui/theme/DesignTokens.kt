@@ -24,6 +24,7 @@ object DictionaryShapes {
 
 object DictionaryLayout {
     val MaxReadingWidth = 720.dp
+    val MinDialogWidth = 280.dp
     val MaxDialogWidth = 560.dp
 }
 

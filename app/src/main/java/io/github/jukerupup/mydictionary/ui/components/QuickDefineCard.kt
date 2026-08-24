@@ -20,8 +20,13 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.foundation.focusable
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
@@ -84,13 +89,8 @@ fun QuickDefineCard(
         modifier = modifier,
         scrollable = true,
         onDismiss = onDismiss,
+        title = "Quick Define",
     ) {
-        Text(
-            text = "Quick Define",
-            modifier = Modifier.semantics { heading() },
-            style = MaterialTheme.typography.labelLarge,
-            color = MaterialTheme.colorScheme.primary,
-        )
         when (state) {
             LookupState.Idle -> QuickDefineStatus(
                 StatusKind.Loading,
@@ -140,6 +140,7 @@ private fun QuickDefineCardContainer(
     modifier: Modifier,
     scrollable: Boolean,
     onDismiss: () -> Unit,
+    title: String? = null,
     content: @Composable () -> Unit,
 ) {
     Surface(
@@ -153,26 +154,48 @@ private fun QuickDefineCardContainer(
     ) {
         Column(
             modifier = Modifier
-                .then(
-                    if (scrollable) {
-                        Modifier.verticalScroll(rememberScrollState())
-                    } else {
-                        Modifier
-                    },
-                )
                 .padding(DictionarySpacing.Space5),
             verticalArrangement = Arrangement.spacedBy(DictionarySpacing.Space3),
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End,
-            ) {
-                TextButton(onClick = onDismiss) {
-                    Text("Close")
-                }
-            }
-            content()
+            QuickDefineHeader(title = title, onDismiss = onDismiss)
+            Column(
+                modifier = Modifier.then(
+                    if (scrollable) {
+                        Modifier
+                            .weight(1f, fill = false)
+                            .verticalScroll(rememberScrollState())
+                    } else {
+                        Modifier
+                    },
+                ),
+                verticalArrangement = Arrangement.spacedBy(DictionarySpacing.Space3),
+            ) { content() }
         }
+    }
+}
+
+@Composable
+private fun QuickDefineHeader(title: String?, onDismiss: () -> Unit) {
+    val focusRequester = remember { FocusRequester() }
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(DictionarySpacing.Space3),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        if (title != null) {
+            Text(
+                text = title,
+                modifier = Modifier
+                    .weight(1f)
+                    .focusRequester(focusRequester)
+                    .focusable()
+                    .semantics { heading() },
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.primary,
+            )
+            LaunchedEffect(focusRequester) { focusRequester.requestFocus() }
+        }
+        TextButton(onClick = onDismiss) { Text("Close") }
     }
 }
 
@@ -297,6 +320,7 @@ fun QuickDefineDialog(
                 onPronounce = onPronounce,
                 scrollable = true,
                 modifier = Modifier
+                    .widthIn(min = DictionaryLayout.MinDialogWidth)
                     .widthIn(max = DictionaryLayout.MaxDialogWidth)
                     .heightIn(max = maxHeight - DictionarySpacing.Space8),
             )

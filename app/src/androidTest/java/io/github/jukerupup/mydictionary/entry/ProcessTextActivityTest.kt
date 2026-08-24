@@ -3,6 +3,7 @@ package io.github.jukerupup.mydictionary.entry
 import android.app.Activity
 import android.content.Intent
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.junit4.createEmptyComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
@@ -52,9 +53,11 @@ class ProcessTextActivityTest {
 
         composeRule.onNodeWithTag("process_text_dialog").assertIsDisplayed()
         composeRule.onNodeWithText("Quick Define").assertIsDisplayed()
+        composeRule.onNodeWithText("Quick Define").assertIsFocused()
         composeRule.onNodeWithText("resilient").assertIsDisplayed()
         composeRule.onNodeWithText("able to become strong after difficulty").assertIsDisplayed()
-        composeRule.onNodeWithContentDescription("Listen for resilient").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("Listen for resilient").performClick()
+        composeRule.onNodeWithContentDescription("Try audio again for resilient").assertIsDisplayed()
         composeRule.onNodeWithText("Close").performClick()
 
         assertEquals(Activity.RESULT_CANCELED, scenario.result.resultCode)

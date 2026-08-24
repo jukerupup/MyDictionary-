@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import io.github.jukerupup.mydictionary.domain.lookup.LookupState
 import io.github.jukerupup.mydictionary.domain.lookup.LookupStateEngine
+import io.github.jukerupup.mydictionary.domain.audio.AudioPlaybackState
 import io.github.jukerupup.mydictionary.domain.repository.DictionaryRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -39,6 +40,14 @@ internal class ProcessTextViewModel(
 
     fun dismiss() {
         engine.cancel()
+    }
+
+    fun requestPronunciation(audioReference: String) {
+        if (audioReference.isNotBlank()) {
+            engine.updateAudioState(
+                AudioPlaybackState.Error("Pronunciation playback is not available yet."),
+            )
+        }
     }
 
     override fun onCleared() {

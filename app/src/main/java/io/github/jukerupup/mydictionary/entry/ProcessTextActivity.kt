@@ -58,9 +58,12 @@ class ProcessTextActivity : ComponentActivity() {
                             viewModel.dismiss()
                             finish()
                         },
-                        onPronounce = pronunciationCallback,
+                        onPronounce = viewModel::requestPronunciation,
                         modifier = Modifier
-                            .widthIn(max = DictionaryLayout.MaxDialogWidth)
+                            .widthIn(
+                                min = DictionaryLayout.MinDialogWidth,
+                                max = DictionaryLayout.MaxDialogWidth,
+                            )
                             .heightIn(max = maxHeight - DictionarySpacing.Space8),
                     )
                 }
@@ -72,6 +75,5 @@ class ProcessTextActivity : ComponentActivity() {
         @Volatile
         var repositoryOverride: DictionaryRepository? = null
 
-        val pronunciationCallback: (String) -> Unit = {}
     }
 }
