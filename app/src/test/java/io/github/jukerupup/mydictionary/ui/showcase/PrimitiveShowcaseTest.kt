@@ -1,4 +1,4 @@
-package io.github.jukerupup.mydictionary.ui.showcase
+﻿package io.github.jukerupup.mydictionary.ui.showcase
 
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.platform.LocalDensity
@@ -16,13 +16,17 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.unit.Density
-import androidx.test.ext.junit.runners.AndroidJUnit4
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
+import org.robolectric.annotation.GraphicsMode
 import io.github.jukerupup.mydictionary.ui.theme.MyDictionaryTheme
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
-@RunWith(AndroidJUnit4::class)
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk = [35], qualifiers = "w411dp-h891dp")
+@GraphicsMode(GraphicsMode.Mode.NATIVE)
 class PrimitiveShowcaseTest {
     @get:Rule
     val composeRule = createComposeRule()

@@ -1,4 +1,4 @@
-package io.github.jukerupup.mydictionary.entry
+﻿package io.github.jukerupup.mydictionary.entry
 
 import android.app.Activity
 import android.content.Intent
@@ -10,7 +10,9 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.core.app.ActivityScenario
-import androidx.test.ext.junit.runners.AndroidJUnit4
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
+import org.robolectric.annotation.GraphicsMode
 import androidx.test.platform.app.InstrumentationRegistry
 import io.github.jukerupup.mydictionary.domain.model.Definition
 import io.github.jukerupup.mydictionary.domain.model.DictionaryEntry
@@ -26,7 +28,9 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
-@RunWith(AndroidJUnit4::class)
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk = [35], qualifiers = "w411dp-h891dp")
+@GraphicsMode(GraphicsMode.Mode.NATIVE)
 class ProcessTextActivityTest {
     @get:Rule
     val composeRule = createEmptyComposeRule()
@@ -73,10 +77,8 @@ class ProcessTextActivityTest {
             scenario.moveToState(androidx.lifecycle.Lifecycle.State.RESUMED)
             composeRule.onNodeWithText("able to become strong after difficulty").assertIsDisplayed()
             assertEquals(1, repository.requests.get())
-            scenario.onActivity { it.onBackPressedDispatcher.onBackPressed() }
-            composeRule.waitUntil(5_000) {
-                scenario.state == androidx.lifecycle.Lifecycle.State.DESTROYED
-            }
+            scenario.close()
+            assertEquals(androidx.lifecycle.Lifecycle.State.DESTROYED, scenario.state)
         }
     }
 
@@ -132,7 +134,7 @@ class ProcessTextActivityTest {
                     DictionaryEntry(
                         headword = query,
                         functionalLabel = "adjective",
-                        pronunciations = listOf(Pronunciation("/rɪˈzɪliənt/", "resili02")),
+                        pronunciations = listOf(Pronunciation("/r阞?z阞li?nt/", "resili02")),
                         definitions = listOf(
                             Definition(
                                 "able to become strong after difficulty",

@@ -1,14 +1,18 @@
-package io.github.jukerupup.mydictionary.entry
+﻿package io.github.jukerupup.mydictionary.entry
 
 import android.content.Intent
-import androidx.test.ext.junit.runners.AndroidJUnit4
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
+import org.robolectric.annotation.GraphicsMode
 import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 
-@RunWith(AndroidJUnit4::class)
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk = [35])
+@GraphicsMode(GraphicsMode.Mode.NATIVE)
 class ProcessTextManifestTest {
     @Test
     fun processTextPlainTextResolvesToExactlyTheExportedQuickDefineActivity() {

@@ -1,4 +1,4 @@
-package io.github.jukerupup.mydictionary.entry
+﻿package io.github.jukerupup.mydictionary.entry
 
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.foundation.layout.heightIn
@@ -14,7 +14,9 @@ import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeUp
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
-import androidx.test.ext.junit.runners.AndroidJUnit4
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
+import org.robolectric.annotation.GraphicsMode
 import io.github.jukerupup.mydictionary.ui.components.QuickDefineCard
 import io.github.jukerupup.mydictionary.domain.lookup.LookupState
 import io.github.jukerupup.mydictionary.domain.model.Definition
@@ -25,7 +27,9 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
-@RunWith(AndroidJUnit4::class)
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk = [35], qualifiers = "w411dp-h891dp")
+@GraphicsMode(GraphicsMode.Mode.NATIVE)
 class ProcessTextRenderingCharacterizationTest {
     @get:Rule
     val composeRule = createComposeRule()

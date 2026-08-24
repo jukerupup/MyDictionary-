@@ -1,4 +1,4 @@
-package io.github.jukerupup.mydictionary.ui.thesaurus
+﻿package io.github.jukerupup.mydictionary.ui.thesaurus
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -29,7 +29,9 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
-import androidx.test.ext.junit.runners.AndroidJUnit4
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
+import org.robolectric.annotation.GraphicsMode
 import androidx.test.platform.app.InstrumentationRegistry
 import io.github.jukerupup.mydictionary.domain.model.DictionaryEntry
 import io.github.jukerupup.mydictionary.domain.model.ThesaurusEntry
@@ -46,7 +48,9 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
-@RunWith(AndroidJUnit4::class)
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk = [35], qualifiers = "w411dp-h891dp")
+@GraphicsMode(GraphicsMode.Mode.NATIVE)
 class ThesaurusSectionInstrumentedTest {
     @get:Rule
     val composeRule = createComposeRule()
