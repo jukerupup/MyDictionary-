@@ -25,6 +25,7 @@ Git history.
 ```
 ui/        Jetpack Compose screens, components, primitives, theme. Never calls APIs directly.
 entry/     ProcessTextActivity + ProcessTextViewModel (Quick Define entry point).
+bubble/    BubbleService (foreground service) + BubbleOverlay (floating ball + lookup window) + BubbleController.
 domain/    Pure Kotlin contracts: repository interfaces, lookup/thesaurus/audio state engines, models.
 data/      Merriam-Webster parsing, normalization, audio URL building, Retrofit/OkHttp repository.
 app/       AppContainer: manual dependency wiring + Application class.
@@ -35,6 +36,8 @@ app/       AppContainer: manual dependency wiring + Application class.
 - `domain/lookup/LookupStateEngine.kt` implements latest-query-wins and typed failure states.
 - `domain/thesaurus/ThesaurusExpansionController.kt` lazily fetches the thesaurus on expand.
 - `domain/audio/AudioController.kt` is the interface; `audio/Media3AudioController.kt` is the Media3 impl.
+- `bubble/BubbleService.kt` is a LifecycleService + SavedStateRegistryOwner hosting a draggable
+  Compose bubble via WindowManager; `bubble/BubbleController.kt` reuses LookupStateEngine.
 - `app/AppContainer.kt` wires everything manually (no DI framework).
 
 ## Package map
