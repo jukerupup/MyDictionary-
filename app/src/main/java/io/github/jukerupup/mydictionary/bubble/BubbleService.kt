@@ -86,6 +86,7 @@ class BubbleService : LifecycleService(), SavedStateRegistryOwner {
                         audioController = audioController,
                         onDismiss = { stopSelf() },
                         onMoved = { dx, dy -> moveBubble(dx, dy) },
+                        onExpandedChanged = { expanded -> setFocusable(expanded) },
                     )
                 }
             }
@@ -119,6 +120,23 @@ class BubbleService : LifecycleService(), SavedStateRegistryOwner {
         runCatching {
             params.x += deltaX
             params.y += deltaY
+            bubbleView?.let { windowManager.updateViewLayout(it, params) }
+        }
+    }
+
+    /**
+     * When the bubble expands into the lookup card, it needs input focus so the
+     * text field can show the IME. Collapsed, it must stay NOT_FOCUSABLE so it
+     * does not steal touches from the app underneath.
+     */
+    private fun setFocusable(focusable: Boolean) {
+        val params = layoutParams ?: return
+        runCatching {
+            if (focusable) {
+                params.flags = params.flags and WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE.inv()
+            } else {
+                params.flags = params.flags or WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+            }
             bubbleView?.let { windowManager.updateViewLayout(it, params) }
         }
     }

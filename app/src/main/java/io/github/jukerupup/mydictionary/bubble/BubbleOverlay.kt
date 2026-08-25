@@ -53,6 +53,7 @@ fun BubbleOverlay(
     audioController: AudioController,
     onDismiss: () -> Unit,
     onMoved: (deltaX: Int, deltaY: Int) -> Unit = { _, _ -> },
+    onExpandedChanged: (Boolean) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     var expanded by remember { mutableStateOf(false) }
@@ -60,7 +61,10 @@ fun BubbleOverlay(
 
     if (!expanded) {
         BubbleBall(
-            onTap = { expanded = true },
+            onTap = {
+                expanded = true
+                onExpandedChanged(true)
+            },
             onDrag = onMoved,
             modifier = modifier,
         )
@@ -68,7 +72,10 @@ fun BubbleOverlay(
         BubbleCard(
             state = state,
             onLookup = controller::lookup,
-            onCollapse = { expanded = false },
+            onCollapse = {
+                expanded = false
+                onExpandedChanged(false)
+            },
             onDismiss = onDismiss,
             audioController = audioController,
             modifier = modifier,
