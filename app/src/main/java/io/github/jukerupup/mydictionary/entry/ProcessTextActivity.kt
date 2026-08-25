@@ -27,11 +27,12 @@ class ProcessTextActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setFinishOnTouchOutside(true)
 
-        val repository = repositoryOverride
-            ?: (application as MyDictionaryApplication).container.dictionaryRepository
+        val container = (application as MyDictionaryApplication).container
+        val repository = repositoryOverride ?: container.dictionaryRepository
+        val audioController = audioControllerOverride ?: container.audioController
         val viewModel = ViewModelProvider(
             this,
-            ProcessTextViewModel.Factory(repository),
+            ProcessTextViewModel.Factory(repository, audioController),
         )[ProcessTextViewModel::class.java]
         val selectedText = intent.getCharSequenceExtra(Intent.EXTRA_PROCESS_TEXT)
         viewModel.start(
@@ -74,6 +75,9 @@ class ProcessTextActivity : ComponentActivity() {
     internal companion object {
         @Volatile
         var repositoryOverride: DictionaryRepository? = null
+
+        @Volatile
+        var audioControllerOverride: io.github.jukerupup.mydictionary.domain.audio.AudioController? = null
 
     }
 }

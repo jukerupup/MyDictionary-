@@ -14,6 +14,8 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 import androidx.test.platform.app.InstrumentationRegistry
+import io.github.jukerupup.mydictionary.domain.audio.AudioController
+import io.github.jukerupup.mydictionary.domain.audio.AudioPlaybackState
 import io.github.jukerupup.mydictionary.domain.model.Definition
 import io.github.jukerupup.mydictionary.domain.model.DictionaryEntry
 import io.github.jukerupup.mydictionary.domain.model.Pronunciation
@@ -21,6 +23,7 @@ import io.github.jukerupup.mydictionary.domain.repository.DictionaryRepository
 import io.github.jukerupup.mydictionary.domain.repository.LookupResult
 import java.util.concurrent.atomic.AtomicInteger
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Before
@@ -41,11 +44,13 @@ class ProcessTextActivityTest {
     fun setUp() {
         repository = RecordingRepository()
         ProcessTextActivity.repositoryOverride = repository
+        ProcessTextActivity.audioControllerOverride = FakeAudioController()
     }
 
     @After
     fun tearDown() {
         ProcessTextActivity.repositoryOverride = null
+        ProcessTextActivity.audioControllerOverride = null
     }
 
     @Test
@@ -148,5 +153,23 @@ class ProcessTextActivityTest {
         }
 
         override suspend fun lookupThesaurus(query: String) = LookupResult.NoMatch
+    }
+
+    private class FakeAudioController : AudioController {
+        override val state = MutableStateFlow<AudioPlaybackState>(AudioPlaybackState.Idle)
+
+        override fun play(url: String) {
+            // Robolectric cannot play real audio; surface a recoverable error
+            // so the UI shows "Try audio again" deterministically.
+            state.value = AudioPlaybackState.Error("Pronunciation audio could not be played")
+        }
+
+        override fun stop() {
+            state.value = AudioPlaybackState.Idle
+        }
+
+        override fun release() {
+            state.value = AudioPlaybackState.Idle
+        }
     }
 }

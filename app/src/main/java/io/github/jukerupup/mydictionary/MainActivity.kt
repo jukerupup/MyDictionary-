@@ -24,16 +24,20 @@ class MainActivity : ComponentActivity() {
         val container = (application as MyDictionaryApplication).container
         val viewModel = ViewModelProvider(
             this,
-            LookupViewModel.Factory(container.dictionaryRepository),
+            LookupViewModel.Factory(container.dictionaryRepository, container.audioController),
         )[LookupViewModel::class.java]
         setContent {
             MyDictionaryTheme {
                 val state by viewModel.state.collectAsState()
+                val thesaurusState by viewModel.thesaurusState.collectAsState()
                 LookupScreen(
                     state = state,
                     configuration = container.configuration,
                     onLookup = viewModel::lookup,
                     onPronounce = viewModel::requestPronunciation,
+                    thesaurusState = thesaurusState,
+                    onToggleThesaurus = viewModel::toggleThesaurus,
+                    onRetryThesaurus = viewModel::retryThesaurus,
                 )
             }
         }

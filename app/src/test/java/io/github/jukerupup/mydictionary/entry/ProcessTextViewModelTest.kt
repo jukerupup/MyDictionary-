@@ -1,12 +1,17 @@
-package io.github.jukerupup.mydictionary.entry
+﻿package io.github.jukerupup.mydictionary.entry
 
 import io.github.jukerupup.mydictionary.data.parser.InputError
+import io.github.jukerupup.mydictionary.domain.audio.AudioController
+import io.github.jukerupup.mydictionary.domain.audio.AudioPlaybackState
 import io.github.jukerupup.mydictionary.domain.lookup.LookupState
 import io.github.jukerupup.mydictionary.domain.model.Definition
 import io.github.jukerupup.mydictionary.domain.model.DictionaryEntry
 import io.github.jukerupup.mydictionary.domain.repository.DictionaryRepository
 import io.github.jukerupup.mydictionary.domain.repository.LookupResult
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -30,20 +35,26 @@ class ProcessTextViewModelTest {
 
         values.forEach { value ->
             val repository = RecordingRepository()
+            val viewModelScope = CoroutineScope(StandardTestDispatcher(testScheduler))
             val viewModel = ProcessTextViewModel(
                 repository = repository,
+                audioController = FakeAudioController(),
                 dispatcher = StandardTestDispatcher(testScheduler),
-                scope = this,
+                scope = viewModelScope,
             )
-            val request = ProcessTextRequest(value, readOnly = true)
+            try {
+                val request = ProcessTextRequest(value, readOnly = true)
 
-            viewModel.start(request)
-            viewModel.start(request)
-            advanceUntilIdle()
+                viewModel.start(request)
+                viewModel.start(request)
+                advanceUntilIdle()
 
-            assertEquals(listOf(value), repository.queries)
-            assertEquals(true, viewModel.request?.readOnly)
-            assertTrue(viewModel.state.value is LookupState.Content)
+                assertEquals(listOf(value), repository.queries)
+                assertEquals(true, viewModel.request?.readOnly)
+                assertTrue(viewModel.state.value is LookupState.Content)
+            } finally {
+                viewModelScope.cancel()
+            }
         }
     }
 
@@ -53,19 +64,24 @@ class ProcessTextViewModelTest {
 
         cases.forEach { value ->
             val repository = RecordingRepository()
+            val viewModelScope = CoroutineScope(StandardTestDispatcher(testScheduler))
             val viewModel = ProcessTextViewModel(
                 repository = repository,
+                audioController = FakeAudioController(),
                 dispatcher = StandardTestDispatcher(testScheduler),
-                scope = this,
+                scope = viewModelScope,
             )
+            try {
+                viewModel.start(ProcessTextRequest(value, readOnly = false))
+                advanceUntilIdle()
 
-            viewModel.start(ProcessTextRequest(value, readOnly = false))
-            advanceUntilIdle()
-
-            assertTrue(repository.queries.isEmpty())
-            val state = viewModel.state.value as LookupState.InvalidInput
-            val expected = if (value?.length == 81) InputError.TooLong else InputError.Blank
-            assertEquals(expected, state.error)
+                assertTrue(repository.queries.isEmpty())
+                val state = viewModel.state.value as LookupState.InvalidInput
+                val expected = if (value?.length == 81) InputError.TooLong else InputError.Blank
+                assertEquals(expected, state.error)
+            } finally {
+                viewModelScope.cancel()
+            }
         }
     }
 
@@ -80,19 +96,24 @@ class ProcessTextViewModelTest {
 
             override suspend fun lookupThesaurus(query: String) = LookupResult.NoMatch
         }
+        val viewModelScope = CoroutineScope(StandardTestDispatcher(testScheduler))
         val viewModel = ProcessTextViewModel(
             repository = repository,
+            audioController = FakeAudioController(),
             dispatcher = StandardTestDispatcher(testScheduler),
-            scope = this,
+            scope = viewModelScope,
         )
+        try {
+            viewModel.start(ProcessTextRequest("resilient", readOnly = true))
+            runCurrent()
+            viewModel.dismiss()
+            advanceUntilIdle()
 
-        viewModel.start(ProcessTextRequest("resilient", readOnly = true))
-        runCurrent()
-        viewModel.dismiss()
-        advanceUntilIdle()
-
-        assertTrue(cancelled)
-        assertEquals(LookupState.Idle, viewModel.state.value)
+            assertTrue(cancelled)
+            assertEquals(LookupState.Idle, viewModel.state.value)
+        } finally {
+            viewModelScope.cancel()
+        }
     }
 
     private class RecordingRepository : DictionaryRepository {
@@ -114,5 +135,21 @@ class ProcessTextViewModelTest {
         }
 
         override suspend fun lookupThesaurus(query: String) = LookupResult.NoMatch
+    }
+
+    private class FakeAudioController : AudioController {
+        override val state = MutableStateFlow<AudioPlaybackState>(AudioPlaybackState.Idle)
+
+        override fun play(url: String) {
+            state.value = AudioPlaybackState.Loading
+        }
+
+        override fun stop() {
+            state.value = AudioPlaybackState.Idle
+        }
+
+        override fun release() {
+            state.value = AudioPlaybackState.Idle
+        }
     }
 }

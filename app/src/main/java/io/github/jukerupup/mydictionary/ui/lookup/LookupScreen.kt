@@ -34,6 +34,7 @@ import io.github.jukerupup.mydictionary.domain.model.Definition
 import io.github.jukerupup.mydictionary.domain.model.DictionaryCredential
 import io.github.jukerupup.mydictionary.domain.model.DictionaryEntry
 import io.github.jukerupup.mydictionary.domain.repository.DictionaryError
+import io.github.jukerupup.mydictionary.domain.thesaurus.ThesaurusExpansionState
 import io.github.jukerupup.mydictionary.ui.components.DefinitionBlock
 import io.github.jukerupup.mydictionary.ui.components.DictionarySearchInput
 import io.github.jukerupup.mydictionary.ui.components.ExampleBlock
@@ -45,6 +46,7 @@ import io.github.jukerupup.mydictionary.ui.components.StatusPanel
 import io.github.jukerupup.mydictionary.ui.components.WordHeader
 import io.github.jukerupup.mydictionary.ui.theme.DictionaryLayout
 import io.github.jukerupup.mydictionary.ui.theme.DictionarySpacing
+import io.github.jukerupup.mydictionary.ui.thesaurus.ThesaurusSection
 
 @Composable
 fun LookupScreen(
@@ -53,6 +55,9 @@ fun LookupScreen(
     modifier: Modifier = Modifier,
     configuration: AppConfiguration = AppConfiguration.Ready,
     onPronounce: (String) -> Unit = {},
+    thesaurusState: ThesaurusExpansionState = ThesaurusExpansionState(),
+    onToggleThesaurus: () -> Unit = {},
+    onRetryThesaurus: () -> Unit = {},
 ) {
     var query by rememberSaveable { mutableStateOf(state.queryText()) }
     LaunchedEffect(state.queryText()) {
@@ -114,6 +119,9 @@ fun LookupScreen(
                                 entries = state.entries,
                                 audioState = state.audio,
                                 onPronounce = onPronounce,
+                                thesaurusState = thesaurusState,
+                                onToggleThesaurus = onToggleThesaurus,
+                                onRetryThesaurus = onRetryThesaurus,
                             )
                         }
                         is LookupState.Suggestions -> item {
@@ -148,6 +156,9 @@ private fun LookupContent(
     entries: List<DictionaryEntry>,
     audioState: AudioPlaybackState,
     onPronounce: (String) -> Unit,
+    thesaurusState: ThesaurusExpansionState,
+    onToggleThesaurus: () -> Unit,
+    onRetryThesaurus: () -> Unit,
 ) {
     val entry = entries.firstOrNull()
     val primaryDefinition = entry?.definitions?.firstOrNull { it.text.isNotBlank() }
@@ -206,6 +217,11 @@ private fun LookupContent(
                 }
             }
         }
+        ThesaurusSection(
+            state = thesaurusState,
+            onToggle = onToggleThesaurus,
+            onRetry = onRetryThesaurus,
+        )
         AttributionRow()
     }
 }
