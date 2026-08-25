@@ -87,6 +87,7 @@ class BubbleService : LifecycleService(), SavedStateRegistryOwner {
                         onDismiss = { stopSelf() },
                         onMoved = { dx, dy -> moveBubble(dx, dy) },
                         onExpandedChanged = { expanded -> setFocusable(expanded) },
+                        onOpenWeb = { word -> openFullPage(word) },
                     )
                 }
             }
@@ -139,6 +140,15 @@ class BubbleService : LifecycleService(), SavedStateRegistryOwner {
             }
             bubbleView?.let { windowManager.updateViewLayout(it, params) }
         }
+    }
+
+    private fun openFullPage(word: String) {
+        val url = "https://www.merriam-webster.com/dictionary/" +
+            java.net.URLEncoder.encode(word, "UTF-8")
+        val intent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse(url)).apply {
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+        runCatching { startActivity(intent) }
     }
 
     override fun onDestroy() {

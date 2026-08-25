@@ -54,6 +54,7 @@ fun BubbleOverlay(
     onDismiss: () -> Unit,
     onMoved: (deltaX: Int, deltaY: Int) -> Unit = { _, _ -> },
     onExpandedChanged: (Boolean) -> Unit = {},
+    onOpenWeb: (word: String) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     var expanded by remember { mutableStateOf(false) }
@@ -78,6 +79,11 @@ fun BubbleOverlay(
             },
             onDismiss = onDismiss,
             audioController = audioController,
+            onOpenWeb = { word ->
+                expanded = false
+                onExpandedChanged(false)
+                onOpenWeb(word)
+            },
             modifier = modifier,
         )
     }
@@ -126,6 +132,7 @@ private fun BubbleCard(
     onCollapse: () -> Unit,
     onDismiss: () -> Unit,
     audioController: AudioController,
+    onOpenWeb: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var query by remember { mutableStateOf("") }
@@ -175,6 +182,7 @@ private fun BubbleCard(
                 state = state,
                 onRetry = { onLookup(query) },
                 playback = playback,
+                onOpenWeb = onOpenWeb,
             )
         }
     }
@@ -216,6 +224,7 @@ private fun BubbleResult(
     state: LookupState,
     onRetry: () -> Unit,
     playback: PronunciationPlayback,
+    onOpenWeb: (String) -> Unit,
 ) {
     when (state) {
         LookupState.Idle -> BubbleHint("Type a word, then press search.")
@@ -229,6 +238,7 @@ private fun BubbleResult(
         is LookupState.Content -> BubbleDefinition(
             entry = state.entries.firstOrNull(),
             playback = playback,
+            onOpenWeb = onOpenWeb,
         )
         is LookupState.Suggestions -> Column {
             Text("Did you mean:", style = MaterialTheme.typography.bodyMedium)
@@ -253,6 +263,7 @@ private fun BubbleResult(
 private fun BubbleDefinition(
     entry: DictionaryEntry?,
     playback: PronunciationPlayback,
+    onOpenWeb: (String) -> Unit,
 ) {
     if (entry == null) {
         BubbleHint("No readable definition.")
@@ -286,8 +297,21 @@ private fun BubbleDefinition(
             maxLines = 4,
             overflow = TextOverflow.Ellipsis,
         )
-        if (audioUrl != null) {
-            BubblePronunciationButton(audioUrl, playback, entry.headword)
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            if (audioUrl != null) {
+                BubblePronunciationButton(audioUrl, playback, entry.headword)
+            }
+            Text(
+                text = "Open full page",
+                modifier = Modifier
+                    .testTag("bubble_open_web")
+                    .clickable { onOpenWeb(entry.headword) },
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.primary,
+            )
         }
         Text(
             text = "Merriam-Webster's Learner's Dictionary",

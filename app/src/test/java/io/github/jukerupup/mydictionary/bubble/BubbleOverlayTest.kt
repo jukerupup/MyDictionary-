@@ -138,6 +138,31 @@ class BubbleOverlayTest {
     }
 
     @Test
+    fun `open full page fires callback with headword and collapses bubble`() {
+        val openedWords = mutableListOf<String>()
+        val expandedEvents = mutableListOf<Boolean>()
+        composeRule.setContent {
+            BubbleOverlay(
+                controller = controller(RecordingRepository()),
+                audioController = FakeAudioController(),
+                onDismiss = {},
+                onExpandedChanged = { expandedEvents += it },
+                onOpenWeb = { openedWords += it },
+            )
+        }
+        composeRule.onNodeWithTag("bubble_ball").performClick()
+        composeRule.onNodeWithTag("bubble_input").performTextInput("resilient")
+        composeRule.onNodeWithTag("bubble_input").performImeAction()
+
+        composeRule.onNodeWithTag("bubble_open_web").assertIsDisplayed()
+        composeRule.onNodeWithTag("bubble_open_web").performClick()
+
+        assertEquals(listOf("resilient"), openedWords)
+        composeRule.onNodeWithTag("bubble_ball").assertIsDisplayed()
+        assertTrue(expandedEvents.contains(false))
+    }
+
+    @Test
     fun `no match state shows a hint`() {
         val repository = object : DictionaryRepository {
             override suspend fun lookupDefinition(query: String) = LookupResult.NoMatch
