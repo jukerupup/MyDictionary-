@@ -22,9 +22,10 @@ class MainActivity : ComponentActivity() {
             isAppearanceLightNavigationBars = !isDarkTheme
         }
         val container = (application as MyDictionaryApplication).container
+        val audioController = container.audioControllerFactory(this)
         val viewModel = ViewModelProvider(
             this,
-            LookupViewModel.Factory(container.dictionaryRepository, container.audioController),
+            LookupViewModel.Factory(container.dictionaryRepository, audioController),
         )[LookupViewModel::class.java]
         setContent {
             MyDictionaryTheme {

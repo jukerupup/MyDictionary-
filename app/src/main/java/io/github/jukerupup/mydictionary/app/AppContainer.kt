@@ -21,7 +21,7 @@ sealed interface AppConfiguration {
 class AppContainer private constructor(
     val configuration: AppConfiguration,
     val dictionaryRepository: DictionaryRepository,
-    val audioController: AudioController,
+    val audioControllerFactory: (Context) -> AudioController,
 ) {
     companion object {
         fun create(context: Context, learnersKey: String, thesaurusKey: String): AppContainer {
@@ -46,7 +46,9 @@ class AppContainer private constructor(
             return AppContainer(
                 configuration = configuration,
                 dictionaryRepository = repository,
-                audioController = Media3AudioController(context.applicationContext),
+                audioControllerFactory = { appContext ->
+                    Media3AudioController(appContext.applicationContext)
+                },
             )
         }
     }

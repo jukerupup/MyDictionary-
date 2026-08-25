@@ -29,7 +29,7 @@ class ProcessTextActivity : ComponentActivity() {
 
         val container = (application as MyDictionaryApplication).container
         val repository = repositoryOverride ?: container.dictionaryRepository
-        val audioController = audioControllerOverride ?: container.audioController
+        val audioController = audioControllerOverride ?: container.audioControllerFactory(this)
         val viewModel = ViewModelProvider(
             this,
             ProcessTextViewModel.Factory(repository, audioController),
