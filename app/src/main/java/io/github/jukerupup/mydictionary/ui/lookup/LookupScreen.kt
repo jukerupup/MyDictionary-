@@ -186,6 +186,7 @@ private fun LookupContent(
         }
     }
     var expanded by rememberSaveable(entry?.headword) { mutableStateOf(false) }
+    var showChinese by rememberSaveable(entry?.headword) { mutableStateOf(false) }
 
     Column(verticalArrangement = Arrangement.spacedBy(DictionarySpacing.Space4)) {
         if (entry == null || (primaryDefinition == null && fallback == null)) {
@@ -213,6 +214,29 @@ private fun LookupContent(
             DefinitionWithExamples(primaryDefinition, senseNumber = 1)
         } else if (fallback != null) {
             DefinitionBlock(definition = fallback, senseNumber = 1)
+        }
+
+        val translations = entry.translations
+        if (translations.isNotEmpty()) {
+            ExpansionRow(
+                title = "中文解釋",
+                expanded = showChinese,
+                onToggle = { showChinese = !showChinese },
+            )
+            if (showChinese) {
+                Column(
+                    modifier = Modifier.testTag("chinese_translations"),
+                    verticalArrangement = Arrangement.spacedBy(DictionarySpacing.Space2),
+                ) {
+                    translations.forEach { translation ->
+                        Text(
+                            text = translation,
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+            }
         }
 
         if (additionalDefinitions.isNotEmpty()) {

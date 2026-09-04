@@ -1,20 +1,7 @@
-import java.util.Properties
-
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.plugin.compose")
 }
-
-val localProperties = Properties().apply {
-    val file = rootProject.file("local.properties")
-    if (file.isFile) file.inputStream().use(::load)
-}
-
-fun localCredential(name: String): String =
-    localProperties.getProperty(name).orEmpty().trim()
-
-fun quotedBuildConfig(value: String): String =
-    "\"${value.replace("\\", "\\\\").replace("\"", "\\\"")}\""
 
 android {
     namespace = "io.github.jukerupup.mydictionary"
@@ -32,22 +19,8 @@ android {
     }
 
     buildTypes {
-        debug {
-            buildConfigField(
-                "String",
-                "MW_LEARNERS_KEY",
-                quotedBuildConfig(localCredential("MW_LEARNERS_KEY")),
-            )
-            buildConfigField(
-                "String",
-                "MW_THESAURUS_KEY",
-                quotedBuildConfig(localCredential("MW_THESAURUS_KEY")),
-            )
-        }
         release {
             isMinifyEnabled = false
-            buildConfigField("String", "MW_LEARNERS_KEY", "\"\"")
-            buildConfigField("String", "MW_THESAURUS_KEY", "\"\"")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
@@ -61,7 +34,6 @@ android {
     }
 
     buildFeatures {
-        buildConfig = true
         compose = true
     }
 

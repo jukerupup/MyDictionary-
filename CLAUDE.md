@@ -5,20 +5,24 @@ what the project is, how it is organized, and the rules that keep it reproducibl
 
 ## Project purpose and boundaries
 
-MyDictionary is a standalone Android learner's dictionary app. It looks up words in
-Merriam-Webster's Learner's Dictionary, plays pronunciation audio, and expands related
-vocabulary from the Intermediate Thesaurus on demand. It also exposes a compact `Quick
-Define` dialog that any Android app can open on selected text via `ACTION_PROCESS_TEXT`.
+MyDictionary is a standalone Android learner's dictionary app. It looks up English words
+in Wiktionary (free, no key, no rate limit), shows the definition with an optional
+Chinese translation (hidden until tapped), and plays pronunciation audio. It also exposes
+a compact `Quick Define` dialog via `ACTION_PROCESS_TEXT` and a floating **bubble** for
+on-demand lookup over other apps.
 
-**In scope:** one `:app` module; manual lookup; Quick Define; Learners Dictionary
-definitions/IPA/examples/audio/suggestions; Intermediate Thesaurus on expand; resilient
-typed errors; local secret-safe API keys; tests; MW attribution.
+**In scope:** one `:app` module; manual lookup; Quick Define; floating bubble; Wiktionary
+definitions/translations/audio; resilient typed errors; tests; Wiktionary (CC BY-SA)
+attribution.
 
-**Hard boundaries (do not cross):** no overlay/accessibility/clipboard/background
-service; no WorkManager/notification; no Room/history/favorites/accounts/cloud; no
-Wordnik/other dictionary sources; no Hilt/Koin/multi-module/navigation framework; no
-force-push/history rewrite/PR; no API keys or `.omo`/`.codegraph`/`build` artifacts in
-Git history.
+**Hard boundaries (do not cross):** no accessibility/clipboard monitoring; no
+WorkManager/notification; no Room/history/favorites/accounts/cloud; no Hilt/Koin/
+multi-module/navigation framework; no force-push/history rewrite/PR; no API keys or
+`.omo`/`.codegraph`/`build` artifacts in Git history.
+
+> Note: the floating bubble uses `SYSTEM_ALERT_WINDOW` + a foreground service — a
+> deliberate, user-authorized scope addition (task 11) that supersedes the original
+> "no overlay/background service" boundary.
 
 ## Architecture and layer responsibilities
 
@@ -27,7 +31,7 @@ ui/        Jetpack Compose screens, components, primitives, theme. Never calls A
 entry/     ProcessTextActivity + ProcessTextViewModel (Quick Define entry point).
 bubble/    BubbleService (foreground service) + BubbleOverlay (floating ball + lookup window) + BubbleController.
 domain/    Pure Kotlin contracts: repository interfaces, lookup/thesaurus/audio state engines, models.
-data/      Merriam-Webster parsing, normalization, audio URL building, Retrofit/OkHttp repository.
+data/      Wiktionary parsing (en definitions + zh translations), audio URL building, Retrofit/OkHttp repository.
 app/       AppContainer: manual dependency wiring + Application class.
 ```
 
@@ -49,16 +53,17 @@ io.github.jukerupup.mydictionary
 ├── app/AppContainer.kt                 manual DI wiring
 ├── audio/Media3AudioController.kt      Media3 ExoPlayer pronunciation impl
 ├── data/
-│   ├── parser/                         InputNormalizer, MerriamWebsterParser/Markup/Audio, ParseContracts
-│   ├── remote/MerriamWebsterApi.kt     Retrofit endpoints (raw bodies)
-│   └── repository/MerriamWebsterDictionaryRepository.kt
+│   ├── parser/                         InputNormalizer, WiktionaryParser, ParseContracts
+│   ├── remote/WiktionaryApi.kt         en + zh Wiktionary Retrofit endpoints
+│   └── repository/WiktionaryDictionaryRepository.kt
 ├── domain/
 │   ├── audio/AudioController.kt        audio contract
 │   ├── lookup/LookupStateEngine.kt     latest-query-wins lookup state
-│   ├── model/DictionaryModels.kt       DictionaryEntry, ThesaurusEntry, Definition, Pronunciation...
+│   ├── model/DictionaryModels.kt       DictionaryEntry (with translations), ThesaurusEntry, ...
 │   ├── repository/DictionaryRepository.kt  lookupDefinition / lookupThesaurus contract
 │   └── thesaurus/ThesaurusExpansionController.kt
 ├── entry/                              ProcessTextActivity + ProcessTextViewModel (Quick Define)
+├── bubble/                             BubbleService, BubbleOverlay, BubbleController
 └── ui/
     ├── audio/                          PronunciationControl, PronunciationPlayback
     ├── components/                     QuickDefineCard, SearchInput, StatusPrimitives, WordPrimitives
@@ -74,8 +79,9 @@ io.github.jukerupup.mydictionary
 1. `MainActivity`/`LookupScreen` collects query → `LookupViewModel.lookup(query)`.
 2. `LookupViewModel` → `LookupStateEngine.lookup()` (latest-query-wins, dedupe, cancellation).
 3. `LookupStateEngine` → `DictionaryRepository.lookupDefinition(query)`.
-4. `MerriamWebsterDictionaryRepository` → `MerriamWebsterApi` (raw body) → `MerriamWebsterParser`
-   → `List<DictionaryEntry>` → `LookupResult.Success/Failure`.
+4. `WiktionaryDictionaryRepository` → en Wiktionary REST API (definition) + zh Wiktionary
+   wikitext (Chinese translation + audio) → `WiktionaryParser` → `List<DictionaryEntry>`
+   (headword, functionalLabel, definitions, translations, pronunciation) → `LookupResult`.
 5. State flows back through `LookupViewModel` to `LookupScreen` (typed UI states).
 
 ### Quick Define
@@ -91,10 +97,12 @@ io.github.jukerupup.mydictionary
 - `LookupResult<T>` = `Success(value)` | `Suggestions(values)` | `NoMatch` | `Failure(DictionaryError)`.
 - `DictionaryError` = `MissingConfiguration(credentials)` | `InvalidCredential | QuotaExceeded | Offline |
   Timeout | NonJsonResponse | Server(statusCode) | MalformedContent(detail)`.
+- `DictionaryEntry` carries `translations: List<String>` for the Chinese glosses (hidden by
+  default, revealed on tap).
 - Thesaurus is fetched ONLY on expansion, cached in memory for the current headword, cancelled
-  on headword change, and never blocks or replaces the primary definition.
-- Audio: `sound.audio` + documented `bix`/`gg`/number/first-letter subdirectory rule →
-  `https://media.merriam-webster.com/audio/prons/...`.
+  on headword change, and never blocks or replaces the primary definition. (Wiktionary has no
+  separate thesaurus endpoint, so `lookupThesaurus` returns `NoMatch`.)
+- Audio: Wiktionary `{{audio|en|FILENAME}}` → `https://en.wiktionary.org/wiki/Special:FilePath/FILENAME`.
 
 ## UI state model
 

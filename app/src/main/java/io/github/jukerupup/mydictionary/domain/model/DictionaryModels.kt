@@ -9,6 +9,7 @@ data class DictionaryEntry(
     val stems: List<String> = emptyList(),
     val shortDefinition: String? = null,
     val derivedEntries: List<DerivedEntry> = emptyList(),
+    val translations: List<String> = emptyList(),
 )
 
 data class Pronunciation(
