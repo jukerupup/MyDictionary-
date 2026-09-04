@@ -98,7 +98,7 @@ fun LookupScreen(
                             onClick = onStartBubble,
                             modifier = Modifier.testTag("start_bubble"),
                         ) {
-                            Text("泡泡")
+                            Text("Bubble")
                         }
                     }
                 }
