@@ -223,6 +223,30 @@ class LookupScreenTest {
         composeRule.runOnIdle { check(retried == "resilient") }
     }
 
+    @Test
+    fun chineseTranslationsAreHiddenUntilExpanded() {
+        composeRule.setContent {
+            MyDictionaryTheme {
+                LookupScreen(
+                    state = LookupState.Content(
+                        "resilient",
+                        listOf(learnerEntry().copy(translations = listOf("彈回的", "有彈力的"))),
+                    ),
+                    onLookup = {},
+                )
+            }
+        }
+        // The translation text is NOT visible while collapsed.
+        composeRule.onAllNodesWithText("彈回的").assertCountEquals(0)
+        composeRule.onAllNodesWithText("有彈力的").assertCountEquals(0)
+        // The "中文解釋" toggle is visible.
+        composeRule.onNodeWithText("中文解釋").assertIsDisplayed()
+        // Expand it.
+        composeRule.onNodeWithText("中文解釋").performClick()
+        composeRule.onNodeWithText("彈回的").assertIsDisplayed()
+        composeRule.onNodeWithText("有彈力的").assertIsDisplayed()
+    }
+
     private fun learnerEntry() = DictionaryEntry(
         headword = "resilient",
         functionalLabel = "adjective",
