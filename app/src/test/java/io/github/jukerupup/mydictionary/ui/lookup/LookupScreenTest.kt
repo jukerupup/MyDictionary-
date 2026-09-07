@@ -28,7 +28,6 @@ import io.github.jukerupup.mydictionary.app.AppConfiguration
 import io.github.jukerupup.mydictionary.data.parser.InputError
 import io.github.jukerupup.mydictionary.domain.lookup.LookupState
 import io.github.jukerupup.mydictionary.domain.model.Definition
-import io.github.jukerupup.mydictionary.domain.model.DictionaryCredential
 import io.github.jukerupup.mydictionary.domain.model.DictionaryEntry
 import io.github.jukerupup.mydictionary.domain.model.Pronunciation
 import io.github.jukerupup.mydictionary.domain.repository.DictionaryError
@@ -83,9 +82,9 @@ class LookupScreenTest {
         composeRule.onNodeWithText("More meanings").performClick()
         composeRule.onNodeWithText("strong after change").assertIsDisplayed()
         composeRule.onNodeWithTag("lookup_list").performScrollToNode(
-            androidx.compose.ui.test.hasTestTag("merriam_webster_attribution"),
+            androidx.compose.ui.test.hasTestTag("wiktionary_attribution"),
         )
-        composeRule.onNodeWithTag("merriam_webster_attribution").assertIsDisplayed()
+        composeRule.onNodeWithTag("wiktionary_attribution").assertIsDisplayed()
     }
 
     @Test
@@ -135,12 +134,6 @@ class LookupScreenTest {
             composeRule.runOnIdle { activeState = state }
             composeRule.onNodeWithText(expected).assertIsDisplayed()
         }
-        composeRule.runOnIdle {
-            activeState = LookupState.Idle
-            configuration = AppConfiguration.MissingCredentials(setOf(DictionaryCredential.Learners))
-        }
-        composeRule.onNodeWithText("Dictionary setup needed").assertIsDisplayed()
-        composeRule.onNodeWithTag("search_input").assertIsNotEnabled()
     }
 
     @Test
@@ -168,9 +161,9 @@ class LookupScreenTest {
         }
         composeRule.onNodeWithText("More meanings").performClick()
         composeRule.onNodeWithTag("lookup_list").performScrollToNode(
-            androidx.compose.ui.test.hasTestTag("merriam_webster_attribution"),
+            androidx.compose.ui.test.hasTestTag("wiktionary_attribution"),
         )
-        composeRule.onNodeWithTag("merriam_webster_attribution").assertIsDisplayed()
+        composeRule.onNodeWithTag("wiktionary_attribution").assertIsDisplayed()
     }
 
     @Test
@@ -190,9 +183,9 @@ class LookupScreenTest {
             .assertContentDescriptionEquals("Listen for resilient")
             .performClick()
         composeRule.runOnIdle { check(requestedAudio == "resili02") }
-        composeRule.onNodeWithTag("merriam_webster_attribution")
+        composeRule.onNodeWithTag("wiktionary_attribution")
             .assertContentDescriptionEquals(
-                "Dictionary content from Merriam-Webster's Learner's Dictionary",
+                "Dictionary content from Wiktionary (CC BY-SA 4.0)",
             )
     }
 

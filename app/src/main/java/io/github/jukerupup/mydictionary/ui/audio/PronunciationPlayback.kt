@@ -76,14 +76,15 @@ class PronunciationPlayback(
 
     private fun isOfficialPronunciationUrl(value: String): Boolean = runCatching {
         val uri = URI(value)
+        val host = uri.host?.lowercase()
         uri.scheme == "https" &&
-            uri.host.equals(OFFICIAL_AUDIO_HOST, ignoreCase = true) &&
             uri.port == -1 &&
             uri.userInfo == null &&
             uri.query == null &&
             uri.fragment == null &&
-            uri.path.startsWith(OFFICIAL_AUDIO_PATH) &&
-            uri.path.endsWith(".mp3")
+            ((host == "media.merriam-webster.com" && uri.path.startsWith("/audio/prons/en/us/mp3/") && uri.path.endsWith(".mp3")) ||
+                (host == "en.wiktionary.org" && uri.path.startsWith("/wiki/Special:FilePath/")) ||
+                (host == "commons.wikimedia.org" && uri.path.endsWith(".ogg")))
     }.getOrDefault(false)
 
     private val AudioPlaybackState.isActive: Boolean
@@ -91,7 +92,5 @@ class PronunciationPlayback(
 
     private companion object {
         const val DOUBLE_TAP_WINDOW_MILLIS = 300L
-        const val OFFICIAL_AUDIO_HOST = "media.merriam-webster.com"
-        const val OFFICIAL_AUDIO_PATH = "/audio/prons/en/us/mp3/"
     }
 }

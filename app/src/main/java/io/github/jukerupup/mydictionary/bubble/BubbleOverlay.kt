@@ -34,7 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import io.github.jukerupup.mydictionary.data.parser.MerriamWebsterAudio
+import io.github.jukerupup.mydictionary.data.parser.WiktionaryAudio
 import io.github.jukerupup.mydictionary.domain.audio.AudioController
 import io.github.jukerupup.mydictionary.domain.audio.AudioPlaybackState
 import io.github.jukerupup.mydictionary.domain.lookup.LookupState
@@ -275,7 +275,7 @@ private fun BubbleDefinition(
             return
         }
     val pronunciation = entry.pronunciations.firstOrNull()
-    val audioUrl = MerriamWebsterAudio.urlFor(pronunciation?.audioReference)
+    val audioUrl = WiktionaryAudio.urlFor(pronunciation?.audioReference)
 
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Text(
@@ -314,7 +314,7 @@ private fun BubbleDefinition(
             )
         }
         Text(
-            text = "Merriam-Webster's Learner's Dictionary",
+            text = "Wiktionary",
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             maxLines = 1,

@@ -1,8 +1,8 @@
-package io.github.jukerupup.mydictionary.entry
+﻿package io.github.jukerupup.mydictionary.entry
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import io.github.jukerupup.mydictionary.data.parser.MerriamWebsterAudio
+import io.github.jukerupup.mydictionary.data.parser.WiktionaryAudio
 import io.github.jukerupup.mydictionary.domain.audio.AudioController
 import io.github.jukerupup.mydictionary.domain.lookup.LookupState
 import io.github.jukerupup.mydictionary.domain.lookup.LookupStateEngine
@@ -54,7 +54,7 @@ internal class ProcessTextViewModel(
     }
 
     fun requestPronunciation(audioReference: String) {
-        playback.play(MerriamWebsterAudio.urlFor(audioReference))
+        playback.play(WiktionaryAudio.urlFor(audioReference))
     }
 
     override fun onCleared() {

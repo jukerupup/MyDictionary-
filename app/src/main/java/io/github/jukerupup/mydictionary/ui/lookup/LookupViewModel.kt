@@ -1,8 +1,8 @@
-package io.github.jukerupup.mydictionary.ui.lookup
+﻿package io.github.jukerupup.mydictionary.ui.lookup
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import io.github.jukerupup.mydictionary.data.parser.MerriamWebsterAudio
+import io.github.jukerupup.mydictionary.data.parser.WiktionaryAudio
 import io.github.jukerupup.mydictionary.domain.audio.AudioController
 import io.github.jukerupup.mydictionary.domain.audio.AudioPlaybackState
 import io.github.jukerupup.mydictionary.domain.lookup.LookupState
@@ -48,7 +48,7 @@ class LookupViewModel(
     fun retryThesaurus() = thesaurus.retry()
 
     fun requestPronunciation(audioReference: String) {
-        playback.play(MerriamWebsterAudio.urlFor(audioReference))
+        playback.play(WiktionaryAudio.urlFor(audioReference))
     }
 
     override fun onCleared() {

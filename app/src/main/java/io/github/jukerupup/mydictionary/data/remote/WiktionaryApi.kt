@@ -24,7 +24,7 @@ interface WiktionaryApi {
     suspend fun englishDefinition(@Path("word") word: String): Response<ResponseBody>
 
     @GET("w/api.php")
-    suspend fun chineseWikitext(
+    suspend fun wikitext(
         @Query("action") action: String = "parse",
         @Query("page") page: String,
         @Query("prop") prop: String = "wikitext",

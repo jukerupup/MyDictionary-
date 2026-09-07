@@ -44,6 +44,18 @@ class WiktionaryParser(
         ChinesePayload(emptyList(), null)
     }
 
+    /** Extracts usage examples (`#* {{quote-text|...|passage=...}}` and `#: ...`) from en wikitext. */
+    fun parseEnglishExamples(source: String): List<String> = try {
+        val root = json.parseToJsonElement(source).jsonObject
+        val wikitext = root["parse"]?.jsonObject
+            ?.get("wikitext")?.jsonObject
+            ?.get("*")?.jsonPrimitive?.contentOrNull
+            ?: return emptyList()
+        wikitext.extractExamples()
+    } catch (_: IllegalArgumentException) {
+        emptyList()
+    }
+
     private fun JsonObject.parseEnglishEntry(): DictionaryEntry? {
         val language = this["language"]?.jsonPrimitive?.contentOrNull
         if (language != "English") return null
@@ -119,6 +131,34 @@ private fun String.extractAudioReference(): String? {
     val match = Regex("""\{\{audio\|en\|([^}|]+)""").find(this) ?: return null
     return match.groupValues[1].trim()
 }
+
+/**
+ * Extracts usage examples from English Wiktionary wikitext.
+ *
+ * Examples appear in two shapes:
+ * - `#* {{quote-text|en|...|passage=He's resilient.}}`
+ * - `#: an example sentence`
+ */
+private fun String.extractExamples(): List<String> {
+    val result = mutableListOf<String>()
+    for (line in lineSequence()) {
+        val trimmed = line.trim()
+        val example = when {
+            trimmed.startsWith("#*") -> {
+                // quote-text template: pull the passage= argument.
+                val passage = Regex("""passage=([^|}]+)""").find(trimmed)?.groupValues?.get(1)
+                    ?: continue
+                passage.stripMarkup()
+            }
+            trimmed.startsWith("#:") -> trimmed.removePrefix("#:").stripMarkup()
+            else -> continue
+        }
+        if (example.isNotEmpty() && example.length > 4) result.add(example)
+    }
+    return result.distinct().take(MAX_EXAMPLES)
+}
+
+private const val MAX_EXAMPLES = 6
 
 data class ChinesePayload(
     val translations: List<String>,

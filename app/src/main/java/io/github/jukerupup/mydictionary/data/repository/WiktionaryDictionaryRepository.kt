@@ -47,15 +47,24 @@ class WiktionaryDictionaryRepository(
 
         if (parsed.entries.isEmpty()) return LookupResult.NoMatch
 
-        // Fetch Chinese translations + audio in a separate call; degrade gracefully.
+        // Fetch Chinese translations + audio + usage examples; degrade gracefully.
         val chinese = runCatching {
-            val response = chineseApi.chineseWikitext(page = query)
+            val response = chineseApi.wikitext(page = query)
             if (response.isSuccessful) {
                 response.body()?.string()?.let(parser::parseChinese)
             } else {
                 null
             }
         }.getOrNull()
+
+        val examples = runCatching {
+            val response = englishApi.wikitext(page = query)
+            if (response.isSuccessful) {
+                response.body()?.string()?.let(parser::parseEnglishExamples)
+            } else {
+                emptyList()
+            }
+        }.getOrNull() ?: emptyList()
 
         val entries = parsed.entries.map { entry ->
             entry.copy(
@@ -64,6 +73,13 @@ class WiktionaryDictionaryRepository(
                 pronunciations = chinese?.audioReference?.let {
                     listOf(Pronunciation(ipa = null, audioReference = it))
                 } ?: emptyList(),
+                definitions = entry.definitions.mapIndexed { index, definition ->
+                    if (index == 0 && definition.examples.isEmpty() && examples.isNotEmpty()) {
+                        definition.copy(examples = examples)
+                    } else {
+                        definition
+                    }
+                },
             )
         }
         LookupResult.Success(entries)

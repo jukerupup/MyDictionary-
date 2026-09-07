@@ -303,8 +303,8 @@ private fun SuggestionsPanel(values: List<String>, onLookup: (String) -> Unit) {
 private fun ConfigurationPanel() {
     StatusPanel(
         kind = StatusKind.Configuration,
-        title = "Dictionary setup needed",
-        message = "Add the Merriam-Webster Learner's Dictionary key in local.properties, then rebuild the app.",
+        title = "Dictionary unavailable",
+        message = "The dictionary service is not reachable. Check your connection and try again.",
     )
 }
 
@@ -364,12 +364,12 @@ private fun FailurePanel(error: DictionaryError, onRetry: () -> Unit) {
 @Composable
 private fun AttributionRow() {
     Text(
-        text = "Merriam-Webster's Learner's Dictionary",
+        text = "Wiktionary",
         modifier = Modifier
             .fillMaxWidth()
-            .testTag("merriam_webster_attribution")
+            .testTag("wiktionary_attribution")
             .semantics {
-                contentDescription = "Dictionary content from Merriam-Webster's Learner's Dictionary"
+                contentDescription = "Dictionary content from Wiktionary (CC BY-SA 4.0)"
             }
             .padding(DictionarySpacing.Space3),
         style = MaterialTheme.typography.labelMedium,

@@ -143,7 +143,7 @@ class BubbleService : LifecycleService(), SavedStateRegistryOwner {
     }
 
     private fun openFullPage(word: String) {
-        val url = "https://www.merriam-webster.com/dictionary/" +
+        val url = "https://en.wiktionary.org/wiki/" +
             java.net.URLEncoder.encode(word, "UTF-8")
         val intent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse(url)).apply {
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)

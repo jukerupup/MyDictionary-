@@ -240,7 +240,7 @@ private fun QuickDefineStatus(kind: StatusKind, title: String, message: String) 
 @Composable
 private fun ProviderAttribution() {
     Text(
-        text = "Definition content from Merriam-Webster Inc.",
+        text = "Wiktionary (CC BY-SA 4.0)",
         style = MaterialTheme.typography.labelMedium,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
     )
